@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sign in — CODE.IO</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="shortcut icon" href="assets/CODE.IO.png" type="image/x-icon" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="progress"></div>
+    <div id="cursor"></div>
+    <div class="grid-bg"></div>
+    <div class="glow a"></div>
+    <div class="glow b"></div>
+    <div class="grain"></div>
+ 
+    <nav>
+      <div class="nav-in">
+        <a href="index.html" class="logo" data-mag>CODE<span class="dot">.</span>IO</a>
+        <div class="nav-links">
+          <a href="work.html" class="page-link">Work</a>
+          <a href="team.html" class="page-link">Team</a>
+          <a href="index.html#stack">Stack</a>
+          <a href="index.html#contact">Contact</a>
+        </div>
+        <div class="nav-right">
+          <a href="index.html" class="btn" data-mag>← Back home</a>
+        </div>
+      </div>
+    </nav>
+ 
+    <main>
+      <div class="auth-wrap">
+        <div class="auth-card rv in">
+          <div class="card" data-tilt style="--ac: var(--p); padding:32px">
+            <div class="auth-tabs">
+              <button type="button" class="auth-tab active" data-tab="signin">Sign in</button>
+              <button type="button" class="auth-tab" data-tab="signup">Create account</button>
+            </div>
+ 
+            <h1 class="auth-title" id="authTitle">Welcome back</h1>
+            <p class="auth-sub" id="authSub">Sign in to your CODE.IO account.</p>
+ 
+            <form id="authForm">
+              <div class="field" id="nameField" style="display:none">
+                <label for="fname">Name</label>
+                <input id="fname" type="text" placeholder="Your name" autocomplete="name" />
+              </div>
+              <div class="field">
+                <label for="femail">Email</label>
+                <input id="femail" type="email" placeholder="you@company.com" autocomplete="email" required />
+              </div>
+              <div class="field">
+                <label for="fpass">Password</label>
+                <input id="fpass" type="password" placeholder="••••••••" autocomplete="current-password" required minlength="6" />
+              </div>
+              <p class="form-err" id="authErr">Enter a valid email and a password with at least 6 characters.</p>
+              <button class="btn primary block" type="submit" data-mag id="authSubmit">Sign in</button>
+            </form>
+ 
+            <p class="hint" id="authHint">Don't have an account? <a href="#" id="switchToSignup">Create one</a></p>
+          </div>
+        </div>
+      </div>
+    </main>
+ 
+    <footer>
+      <div class="f-in">
+        <span class="logo">CODE<span class="dot">.</span>IO</span>
+        <span>© 2026 · Built by Pratyush, Oggy, Shubham</span>
+        <span class="f-links"><a href="https://wa.me/918737820680" target="_blank">WhatsApp</a><a href="#">GitHub</a><a href="#">LinkedIn</a></span>
+      </div>
+    </footer>
+ 
+    <div id="toast"></div>
+    <script src="app.js"></script>
+    <script src="untouch.js"></script>
+    <script>
+      // Front-end demo auth only — no server, no real account security.
+      // Swap the submit handler for a real API call when a backend exists.
+      let mode = "signin";
+      const tabs = document.querySelectorAll(".auth-tab");
+      const nameField = document.getElementById("nameField");
+      const title = document.getElementById("authTitle");
+      const sub = document.getElementById("authSub");
+      const submitBtn = document.getElementById("authSubmit");
+      const hint = document.getElementById("authHint");
+      const err = document.getElementById("authErr");
+ 
+      function setMode(m) {
+        mode = m;
+        tabs.forEach((t) => t.classList.toggle("active", t.dataset.tab === m));
+        err.classList.remove("show");
+        if (m === "signup") {
+          nameField.style.display = "block";
+          document.getElementById("fname").required = true;
+          title.textContent = "Create your account";
+          sub.textContent = "Set up access to your CODE.IO project dashboard.";
+          submitBtn.textContent = "Create account";
+          hint.innerHTML = 'Already have an account? <a href="#" id="switchToSignin">Sign in</a>';
+          document.getElementById("switchToSignin").addEventListener("click", (e) => { e.preventDefault(); setMode("signin"); });
+        } else {
+          nameField.style.display = "none";
+          document.getElementById("fname").required = false;
+          title.textContent = "Welcome back";
+          sub.textContent = "Sign in to your CODE.IO account.";
+          submitBtn.textContent = "Sign in";
+          hint.innerHTML = 'Don\'t have an account? <a href="#" id="switchToSignup">Create one</a>';
+          document.getElementById("switchToSignup").addEventListener("click", (e) => { e.preventDefault(); setMode("signup"); });
+        }
+      }
+      tabs.forEach((t) => t.addEventListener("click", () => setMode(t.dataset.tab)));
+      document.getElementById("switchToSignup").addEventListener("click", (e) => { e.preventDefault(); setMode("signup"); });
+ 
+      document.getElementById("authForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const email = document.getElementById("femail").value.trim();
+        const pass = document.getElementById("fpass").value;
+        const name = document.getElementById("fname").value.trim();
+        if (!email.includes("@") || pass.length < 6) {
+          err.classList.add("show");
+          return;
+        }
+        err.classList.remove("show");
+        const displayName = mode === "signup" && name ? name : email.split("@")[0];
+        setUser({ name: displayName, email });
+        toast(mode === "signup" ? "Account created" : "Signed in");
+        setTimeout(() => (location.href = "index.html"), 700);
+      });
+    </script>
+  </body>
+</html>
+ 

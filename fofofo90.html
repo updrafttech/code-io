@@ -1,0 +1,1090 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>System</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #08080a;
+        --surface: #111113;
+        --card: #18181b;
+        --card2: #1e1e22;
+        --border: #252529;
+        --border2: #2e2e34;
+        --p: #6c63ff;
+        --s: #a855f7;
+        --t: #06ffa5;
+        --red: #ff4d6a;
+        --fg: #f5f5f7;
+        --muted: #8f8f96;
+        --mono: "JetBrains Mono", monospace;
+        --head: "Space Grotesk", sans-serif;
+        --body: "Inter", sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      a,
+      button,
+      input,
+      select,
+      textarea {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button,
+      svg {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      img,
+      svg {
+        max-width: 100%;
+      }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--body);
+      }
+      .grid {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+          ),
+          linear-gradient(
+            to bottom,
+            rgba(255, 255, 255, 0.03) 1px,
+            transparent 1px
+          );
+        background-size: 72px 72px;
+        mask-image: radial-gradient(80% 60% at 50% 0%, #000, transparent);
+      }
+      .glow {
+        position: fixed;
+        width: 600px;
+        height: 600px;
+        filter: blur(140px);
+        opacity: 0.3;
+        pointer-events: none;
+        border-radius: 50%;
+        background: var(--p);
+        top: -200px;
+        left: 10%;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        color: var(--fg);
+        font-size: 14px;
+        padding: 0 12px;
+        height: 42px;
+        outline: none;
+      }
+      textarea {
+        height: 92px;
+        padding: 12px;
+        resize: vertical;
+      }
+      input:focus,
+      select:focus,
+      textarea:focus {
+        border-color: var(--p);
+        box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.18);
+      }
+      label {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin: 14px 0 7px;
+      }
+      .btn {
+        height: 40px;
+        padding: 0 16px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--card2);
+        color: var(--fg);
+        font-size: 13px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        border-color: var(--border2);
+      }
+      .btn.p {
+        background: var(--p);
+        border-color: transparent;
+        box-shadow: 0 8px 28px -12px var(--p);
+      }
+      .btn.d {
+        color: #ff8b96;
+        border-color: #4a2126;
+        background: #1f1214;
+      }
+      .btn.sm {
+        height: 32px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+      .err {
+        color: var(--red);
+        font-family: var(--mono);
+        font-size: 12px;
+        margin-top: 10px;
+        min-height: 16px;
+      }
+      #login {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        z-index: 10;
+        padding: 20px;
+      }
+      .lock {
+        width: 100%;
+        max-width: 400px;
+        background: rgba(24, 24, 27, 0.9);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border2);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.9);
+      }
+      .shake {
+        animation: shake.4s ease;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-6px);
+        }
+        75% {
+          transform: translateX(6px);
+        }
+      }
+      #app {
+        display: none;
+        min-height: 100vh;
+        grid-template-columns: 250px 1fr;
+      }
+      aside {
+        border-right: 1px solid var(--border);
+        background: var(--surface);
+        padding: 20px 14px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .brand {
+        font-family: var(--mono);
+        font-weight: 700;
+        font-size: 16px;
+        padding: 6px 10px;
+      }
+      .brand span {
+        color: var(--p);
+      }
+      .nav {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .nav button {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: 0;
+        color: var(--muted);
+        font-size: 13.5px;
+        padding: 11px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+      }
+      .nav button:hover {
+        color: var(--fg);
+        background: var(--card);
+      }
+      .nav button.on {
+        color: var(--fg);
+        background: var(--card2);
+        box-shadow: inset 3px 0 0 var(--p);
+      }
+      main {
+        padding-bottom: 60px;
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 26px;
+        border-bottom: 1px solid var(--border);
+        background: rgba(8, 8, 10, 0.75);
+        backdrop-filter: blur(14px);
+        position: sticky;
+        top: 0;
+        z-index: 5;
+      }
+      .live {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .live i {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--t);
+        box-shadow: 0 0 10px var(--t);
+      }
+      .pad {
+        padding: 26px;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 14px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 18px;
+      }
+      .card.k {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .card.v {
+        font-family: var(--head);
+        font-size: 30px;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+      h2 {
+        font-family: var(--head);
+        font-size: 20px;
+        margin: 30px 0 14px;
+      }
+      .table-wrap {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .tools {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 16px;
+      }
+      .tools input,
+      .tools select {
+        height: 38px;
+        min-width: 160px;
+        width: auto;
+      }
+      .tag {
+        font-family: var(--mono);
+        font-size: 11px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        display: inline-flex;
+      }
+      .tag.New {
+        color: var(--t);
+        border-color: rgba(6, 255, 165, 0.3);
+        background: rgba(6, 255, 165, 0.08);
+      }
+      .tag.Contacted {
+        color: #ffb86c;
+        border-color: rgba(255, 184, 108, 0.3);
+        background: rgba(255, 184, 108, 0.08);
+      }
+      .tag.Closed {
+        color: var(--muted);
+      }
+      .row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+      }
+      .row3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px;
+      }
+      .clip {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      canvas {
+        width: 100%;
+        height: 220px;
+      }
+      #modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(6px);
+        display: none;
+        place-items: center;
+        z-index: 20;
+        padding: 20px;
+      }
+      #modal.on {
+        display: grid;
+      }
+      .sheet {
+        width: 100%;
+        max-width: 520px;
+        background: var(--card2);
+        border: 1px solid var(--border2);
+        border-radius: 18px;
+        padding: 24px;
+        max-height: 85vh;
+        overflow: auto;
+      }
+      .kv {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 10px;
+        margin-top: 10px;
+        font-size: 13px;
+      }
+      .kv b {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 400;
+        text-transform: uppercase;
+      }
+      #toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translate(-50%, 180%);
+        background: var(--card2);
+        border: 1px solid var(--border2);
+        font-family: var(--mono);
+        font-size: 12px;
+        padding: 12px 18px;
+        border-radius: 12px;
+        transition: 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 40;
+      }
+      #toast.show {
+        transform: translate(-50%, 0);
+      }
+      .thumb {
+        width: 100%;
+        height: 132px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 1px dashed var(--border2);
+        background: var(--surface);
+        margin-top: 10px;
+        display: block;
+      }
+      .sect {
+        display: none;
+      }
+      .sect.on {
+        display: block;
+      }
+      @media (max-width: 980px) {
+        #app {
+          grid-template-columns: 1fr;
+        }
+        aside {
+          position: static;
+          height: auto;
+        }
+        .cards,
+        .row2,
+        .row3 {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <div class="glow"></div>
+    <div id="login">
+      <form class="lock" id="loginForm">
+        <h1>
+          CODE<span>.</span>IO
+          <span style="font-size: 12px; color: var(--muted)">ADMIN</span>
+        </h1>
+        <p style="color: var(--muted); font-size: 13px; margin-top: 6px">
+          fofofo90.html — restricted
+        </p>
+        <label>Password</label
+        ><input id="pw" type="password" placeholder="••••••••" />
+        <div class="err" id="err"></div>
+        <button
+          class="btn p"
+          style="width: 100%; margin-top: 12px"
+          type="submit"
+        >
+          Unlock →
+        </button>
+      </form>
+    </div>
+
+    <div id="app">
+      <aside>
+        <div class="brand">CODE<span>.</span>IO</div>
+        <div class="nav">
+          <button data-go="dash" class="on">◧ Dashboard</button
+          ><button data-go="leads">◫ Leads</button
+          ><button data-go="projects">⬙ Projects</button
+          ><button data-go="team">⧉ Team</button
+          ><button data-go="settings">⚙ Settings</button>
+        </div>
+        <div
+          style="
+            margin-top: auto;
+            padding: 10px;
+            color: var(--muted);
+            font-family: var(--mono);
+            font-size: 11px;
+          "
+        >
+          fofofo90.html · secure
+        </div>
+      </aside>
+      <main>
+        <div class="top">
+          <div style="font-family: var(--mono); font-size: 13px">
+            fofofo90<span style="color: var(--p)">.html</span> — Admin
+          </div>
+          <div style="display: flex; gap: 12px; align-items: center">
+            <span class="live"><i></i><span id="liveCount">0</span> leads</span
+            ><button class="btn sm" id="logout">Logout</button>
+          </div>
+        </div>
+
+        <section class="sect on pad" id="s-dash">
+          <div class="cards">
+            <div class="card">
+              <div class="k">Total Leads</div>
+              <div class="v" id="kTotal">0</div>
+            </div>
+            <div class="card">
+              <div class="k">Today</div>
+              <div class="v" id="kToday">0</div>
+            </div>
+            <div class="card">
+              <div class="k">Pending</div>
+              <div class="v" id="kPending">0</div>
+            </div>
+            <div class="card">
+              <div class="k">Closed</div>
+              <div class="v" id="kDone">0</div>
+            </div>
+          </div>
+          <h2>Last 7 days</h2>
+          <div class="card">
+            <canvas id="chart" width="900" height="260"></canvas>
+          </div>
+          <h2>Recent</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Name</th>
+                  <th>Service</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="recent"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="sect pad" id="s-leads">
+          <div class="tools">
+            <input id="q" placeholder="Search…" /><select id="fBudget">
+              <option value="">All budgets</option></select
+            ><select id="fService">
+              <option value="">All services</option></select
+            ><select id="fStatus">
+              <option value="">All status</option>
+              <option>New</option>
+              <option>Contacted</option>
+              <option>Closed</option></select
+            ><button class="btn sm" id="csv">CSV</button
+            ><button class="btn sm" id="json">JSON</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Company</th>
+                  <th>Budget</th>
+                  <th>Service</th>
+                  <th>Message</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="sect pad" id="s-projects">
+          <div class="row3" id="projForms"></div>
+          <button class="btn p" style="margin-top: 18px" id="saveProjects">
+            Save Projects
+          </button>
+        </section>
+        <section class="sect pad" id="s-team">
+          <div class="row3" id="teamForms"></div>
+          <button class="btn p" style="margin-top: 18px" id="saveTeam">
+            Save Team
+          </button>
+        </section>
+        <section class="sect pad" id="s-settings">
+          <div class="row2">
+            <div class="card">
+              <label>Words</label><input id="setWords" /><label>Marquee</label
+              ><input id="setMarq" /><label>WhatsApp</label
+              ><input id="setWa" /><label>Available</label
+              ><select id="setAvail">
+                <option value="1">On</option>
+                <option value="0">Off</option></select
+              ><button class="btn p" style="margin-top: 18px" id="saveSettings">
+                Save
+              </button>
+            </div>
+            <div class="card" style="border-color: #4a2126">
+              <div class="k" style="color: #ff8b96">Danger</div>
+              <p style="color: var(--muted); font-size: 13px; margin-top: 8px">
+                Delete all leads
+              </p>
+              <button class="btn d" style="margin-top: 12px" id="wipe">
+                Wipe
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="modal"><div class="sheet" id="sheet"></div></div>
+    <div id="toast"></div>
+    <script>
+      const ADMIN_PASSWORD = "codeio@2026";
+      const K = {
+        leads: "codeio_db",
+        projects: "codeio_projects",
+        team: "codeio_team",
+        settings: "codeio_settings",
+        log: "codeio_admin_log",
+      };
+      const LOCK_MS = 30000;
+      const read = (k, f) => {
+        try {
+          const r = localStorage.getItem(k);
+          return r ? JSON.parse(r) : f;
+        } catch {
+          return f;
+        }
+      };
+      const write = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+      const esc = (s) =>
+        String(s).replace(
+          /[&<>"]/g,
+          (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c],
+        );
+      let toastT;
+      const toast = (m) => {
+        const t = document.getElementById("toast");
+        t.textContent = m;
+        t.classList.add("show");
+        clearTimeout(toastT);
+        toastT = setTimeout(() => t.classList.remove("show"), 2500);
+      };
+      const DEF_PROJECTS = [
+        {
+          title: "Musicz",
+          description:
+            "A website where you can access songs with Spotify premium features for free.",
+          link: "https://musicz.pages.dev/",
+          meta: "Music Streaming · React · Click to open",
+          cover: "musicz-cover.jpg",
+        },
+        {
+          title: "AVR Project",
+          description: "Hotel AVR — luxury booking & management OS.",
+          link: "#",
+          meta: "Hotel System · Gold UI · 2025",
+          cover: "",
+        },
+        {
+          title: "Coderio Hair",
+          description: "A polished digital experience for a modern hair studio.",
+          link: "https://coderioohair.netlify.app/",
+          meta: "Product · Live · Click to open",
+          cover:
+            "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&w=1600&q=85",
+        },
+        {
+          title: "Cafe AI",
+          description: "A full-stack cafe platform for smarter ordering and operations.",
+          link: "https://cafe-ai-fullstack-p-du37.bolt.host/",
+          meta: "System · Live · Click to open",
+          cover:
+            "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1600&q=85",
+        },
+      ];
+      const DEF_TEAM = [
+        {
+          name: "Pratyush",
+          role: "Founder",
+          bio: "Leads architecture.",
+          skills: ["TypeScript", "Next.js", "Node", "Postgres"],
+          commits: 4812,
+          prs: 312,
+        },
+        {
+          name: "Oggy",
+          role: "Frontend Engineer",
+          bio: "Owns UI & motion.",
+          skills: ["HTML", "CSS", "JS", "TS"],
+          commits: 3204,
+          prs: 248,
+        },
+        {
+          name: "Shubham",
+          role: "Backend Engineer",
+          bio: "APIs & infra.",
+          skills: ["Node", "MongoDB", "Docker", "AWS"],
+          commits: 3901,
+          prs: 276,
+        },
+      ];
+      const DEF_SETTINGS = {
+        words: ["products", "platforms", "experiences"],
+        available: true,
+        marquee: ["React", "Next.js", "TS", "Node", "Postgres", "MongoDB"],
+        whatsapp: "918737820680",
+      };
+      let leads = [];
+      let attempts = read(K.log, { fails: 0, lockedUntil: 0 });
+      document.getElementById("loginForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const now = Date.now();
+        const err = document.getElementById("err");
+        if (attempts.lockedUntil > now) {
+          err.textContent = `Locked ${Math.ceil((attempts.lockedUntil - now) / 1000)}s`;
+          return;
+        }
+        if (document.getElementById("pw").value === ADMIN_PASSWORD) {
+          attempts = { fails: 0, lockedUntil: 0 };
+          write(K.log, attempts);
+          sessionStorage.setItem("codeio_admin_session", "1");
+          boot();
+        } else {
+          attempts.fails++;
+          if (attempts.fails >= 3) {
+            attempts.lockedUntil = now + LOCK_MS;
+            attempts.fails = 0;
+            err.textContent = "Locked 30s";
+          } else err.textContent = `Wrong ${attempts.fails}/3`;
+          write(K.log, attempts);
+          document.querySelector(".lock").classList.add("shake");
+          setTimeout(
+            () => document.querySelector(".lock").classList.remove("shake"),
+            400,
+          );
+        }
+      });
+      document.getElementById("logout").onclick = () => {
+        sessionStorage.removeItem("codeio_admin_session");
+        location.reload();
+      };
+      function boot() {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("app").style.display = "grid";
+        loadLeads();
+        buildProjects();
+        buildTeam();
+        buildSettings();
+      }
+      if (sessionStorage.getItem("codeio_admin_session") === "1") boot();
+      document.querySelectorAll(".nav button").forEach((b) =>
+        b.addEventListener("click", () => {
+          document
+            .querySelectorAll(".nav button")
+            .forEach((x) => x.classList.remove("on"));
+          b.classList.add("on");
+          document
+            .querySelectorAll(".sect")
+            .forEach((s) => s.classList.remove("on"));
+          document.getElementById("s-" + b.dataset.go).classList.add("on");
+        }),
+      );
+      function loadLeads() {
+        leads = read(K.leads, []).map((l, i) => ({
+          id: l.id || "L" + i,
+          name: l.name || "",
+          email: l.email || "",
+          company: l.company || "",
+          budget: l.budget || "",
+          service: l.service || "",
+          message: l.message || "",
+          status: l.status || "New",
+          created_at: l.created_at || new Date().toISOString(),
+        }));
+        render();
+      }
+      const fmt = (iso) => {
+        const d = new Date(iso);
+        return isNaN(d)
+          ? "—"
+          : d.toLocaleDateString() +
+              " " +
+              d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+      };
+      const filtered = () => {
+        const q = document.getElementById("q").value.toLowerCase(),
+          b = document.getElementById("fBudget").value,
+          s = document.getElementById("fService").value,
+          st = document.getElementById("fStatus").value;
+        return leads.filter((l) => {
+          const hay = (
+            l.name +
+            " " +
+            l.email +
+            " " +
+            l.company +
+            " " +
+            l.message
+          ).toLowerCase();
+          return (
+            (!q || hay.includes(q)) &&
+            (!b || l.budget === b) &&
+            (!s || l.service === s) &&
+            (!st || l.status === st)
+          );
+        });
+      };
+      function fillFilter(id, key) {
+        const sel = document.getElementById(id),
+          keep = sel.value;
+        const uniq = [...new Set(leads.map((l) => l[key]).filter(Boolean))];
+        sel.innerHTML =
+          `<option value="">All ${key}s</option>` +
+          uniq.map((v) => `<option>${esc(v)}</option>`).join("");
+        sel.value = keep;
+      }
+      function render() {
+        document.getElementById("liveCount").textContent = leads.length;
+        const today = new Date().toDateString();
+        document.getElementById("kTotal").textContent = leads.length;
+        document.getElementById("kToday").textContent = leads.filter(
+          (l) => new Date(l.created_at).toDateString() === today,
+        ).length;
+        document.getElementById("kPending").textContent = leads.filter(
+          (l) => l.status !== "Closed",
+        ).length;
+        document.getElementById("kDone").textContent = leads.filter(
+          (l) => l.status === "Closed",
+        ).length;
+        document.getElementById("recent").innerHTML =
+          leads
+            .slice(0, 5)
+            .map(
+              (l) =>
+                `<tr><td>${fmt(l.created_at)}</td><td>${esc(l.name)}</td><td>${esc(l.service)}</td><td><span class="tag ${l.status}">${l.status}</span></td></tr>`,
+            )
+            .join("") ||
+          `<tr><td colspan="4" style="color:var(--muted)">No leads</td></tr>`;
+        fillFilter("fBudget", "budget");
+        fillFilter("fService", "service");
+        const list = filtered();
+        document.getElementById("rows").innerHTML =
+          list
+            .map(
+              (l) =>
+                `<tr><td>${fmt(l.created_at)}</td><td>${esc(l.name)}</td><td>${esc(l.email)}</td><td>${esc(l.company)}</td><td>${esc(l.budget)}</td><td>${esc(l.service)}</td><td class="clip">${esc(l.message)}</td><td><select class="btn sm" data-st="${l.id}">${["New", "Contacted", "Closed"].map((s) => `<option ${l.status === s ? "selected" : ""}>${s}</option>`).join("")}</select></td><td style="display:flex;gap:6px"><button class="btn sm" data-open="${l.id}">View</button><button class="btn sm" data-wa="${l.id}">WA</button><button class="btn sm d" data-del="${l.id}">Del</button></td></tr>`,
+            )
+            .join("") ||
+          `<tr><td colspan="9" style="color:var(--muted)">No data</td></tr>`;
+        drawChart();
+      }
+      document.getElementById("s-leads").addEventListener("click", (e) => {
+        const b = e.target.closest("button");
+        if (!b) return;
+        const id = b.dataset.open || b.dataset.wa || b.dataset.del;
+        const l = leads.find((x) => x.id === id);
+        if (b.dataset.open && l) {
+          document.getElementById("sheet").innerHTML =
+            `<h2 style="margin:0 0 10px">${esc(l.name)}</h2><div class="kv"><b>Email</b><span>${esc(l.email)}</span><b>Company</b><span>${esc(l.company || "—")}</span><b>Budget</b><span>${esc(l.budget)}</span><b>Service</b><span>${esc(l.service)}</span><b>Date</b><span>${fmt(l.created_at)}</span><b>Message</b><span>${esc(l.message)}</span></div><button class="btn p" style="margin-top:14px" onclick="document.getElementById('modal').classList.remove('on')">Close</button>`;
+          document.getElementById("modal").classList.add("on");
+        }
+        if (b.dataset.wa && l) {
+          const wa = read(K.settings, DEF_SETTINGS).whatsapp;
+          window.open(
+            `https://wa.me/${wa}?text=${encodeURIComponent(`Hi ${l.name}, CODE.IO here`)}`,
+            "_blank",
+          );
+        }
+        if (b.dataset.del && l && confirm(`Delete ${l.name}?`)) {
+          leads = leads.filter((x) => x.id !== id);
+          write(K.leads, leads);
+          render();
+          toast("Deleted");
+        }
+      });
+      document.getElementById("s-leads").addEventListener("change", (e) => {
+        if (e.target.dataset.st) {
+          const l = leads.find((x) => x.id === e.target.dataset.st);
+          if (l) {
+            l.status = e.target.value;
+            write(K.leads, leads);
+            render();
+            toast(l.status);
+          }
+        }
+      });
+      ["q", "fBudget", "fService", "fStatus"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", render);
+        document.getElementById(id).addEventListener("change", render);
+      });
+      document.getElementById("modal").addEventListener("click", (e) => {
+        if (e.target.id === "modal") e.currentTarget.classList.remove("on");
+      });
+      document.getElementById("csv").onclick = () => {
+        const cols = [
+          "created_at",
+          "name",
+          "email",
+          "company",
+          "budget",
+          "service",
+          "status",
+          "message",
+        ];
+        const rows = filtered().map((l) =>
+          cols
+            .map((c) => `"${String(l[c] || "").replace(/"/g, '""')}"`)
+            .join(","),
+        );
+        const b = new Blob([cols.join(",") + "\n" + rows.join("\n")], {
+          type: "text/csv",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(b);
+        a.download = "codeio_leads.csv";
+        a.click();
+      };
+      document.getElementById("json").onclick = () => {
+        const b = new Blob([JSON.stringify(filtered(), null, 2)], {
+          type: "application/json",
+        });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(b);
+        a.download = "codeio_leads.json";
+        a.click();
+      };
+      document.getElementById("wipe").onclick = () => {
+        if (confirm("Wipe all?")) {
+          leads = [];
+          write(K.leads, leads);
+          render();
+          toast("Wiped");
+        }
+      };
+      function drawChart() {
+        const c = document.getElementById("chart"),
+          ctx = c.getContext("2d");
+        const w = (c.width = c.clientWidth * 2),
+          h = (c.height = 360);
+        ctx.clearRect(0, 0, w, h);
+        const days = [],
+          counts = [];
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          days.push(d.toLocaleDateString([], { weekday: "short" }));
+          counts.push(
+            leads.filter(
+              (l) => new Date(l.created_at).toDateString() === d.toDateString(),
+            ).length,
+          );
+        }
+        const max = Math.max(...counts, 1),
+          pad = 50,
+          bw = (w - pad * 2) / 7;
+        ctx.font = "22px JetBrains Mono";
+        counts.forEach((v, i) => {
+          const bh = (v / max) * (h - 110),
+            x = pad + i * bw + bw * 0.2,
+            y = h - 60 - bh;
+          const g = ctx.createLinearGradient(0, y, 0, h - 60);
+          g.addColorStop(0, "#6c63ff");
+          g.addColorStop(1, "rgba(108,99,255,.15)");
+          ctx.fillStyle = g;
+          ctx.fillRect(x, y, bw * 0.6, bh);
+          ctx.fillStyle = "#8f8f96";
+          ctx.fillText(days[i], x, h - 24);
+          ctx.fillStyle = "#fff";
+          ctx.fillText(String(v), x, y - 12);
+        });
+      }
+      function buildProjects() {
+        const p = read(K.projects, DEF_PROJECTS);
+        document.getElementById("projForms").innerHTML = p
+          .map(
+            (x, i) =>
+              `<div class="card"><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">PROJECT 0${i + 1}</div><label>Title</label><input data-p="title" data-i="${i}" value="${esc(x.title)}"><label>Desc</label><textarea data-p="description" data-i="${i}">${esc(x.description)}</textarea><label>Link</label><input data-p="link" data-i="${i}" value="${esc(x.link)}"><label>Meta</label><input data-p="meta" data-i="${i}" value="${esc(x.meta)}"><label>Cover</label><input type="file" accept="image/*" data-cover="${i}" style="padding:8px"><img class="thumb" data-thumb="${i}" ${x.cover ? `src="${x.cover}"` : ``}></div>`,
+          )
+          .join("");
+      }
+      document.getElementById("projForms").addEventListener("change", (e) => {
+        if (e.target.dataset.cover === undefined) return;
+        const f = e.target.files[0];
+        if (!f) return;
+        const r = new FileReader();
+        r.onload = () => {
+          document.querySelector(
+            `[data-thumb="${e.target.dataset.cover}"]`,
+          ).src = r.result;
+        };
+        r.readAsDataURL(f);
+      });
+      document.getElementById("saveProjects").onclick = () => {
+        const base = read(K.projects, DEF_PROJECTS);
+        document
+          .querySelectorAll("[data-p]")
+          .forEach((el) => (base[el.dataset.i][el.dataset.p] = el.value));
+        document.querySelectorAll("[data-thumb]").forEach((img) => {
+          if (img.src && img.src.startsWith("data:"))
+            base[img.dataset.thumb].cover = img.src;
+          else if (img.src)
+            base[img.dataset.thumb].cover = img.getAttribute("src");
+        });
+        write(K.projects, base);
+        toast("Projects saved");
+      };
+      function buildTeam() {
+        const t = read(K.team, DEF_TEAM);
+        document.getElementById("teamForms").innerHTML = t
+          .map(
+            (m, i) =>
+              `<div class="card"><div style="font-family:var(--mono);font-size:11px;color:var(--muted)">MEMBER 0${i + 1}</div><label>Name</label><input data-t="name" data-i="${i}" value="${esc(m.name)}"><label>Role</label><input data-t="role" data-i="${i}" value="${esc(m.role)}"><label>Bio</label><textarea data-t="bio" data-i="${i}">${esc(m.bio)}</textarea><label>Skills</label><input data-t="skills" data-i="${i}" value="${esc(m.skills.join(", "))}"><label>Commits</label><input type="number" data-t="commits" data-i="${i}" value="${m.commits}"><label>PRs</label><input type="number" data-t="prs" data-i="${i}" value="${m.prs}"></div>`,
+          )
+          .join("");
+      }
+      document.getElementById("saveTeam").onclick = () => {
+        const base = read(K.team, DEF_TEAM);
+        document.querySelectorAll("[data-t]").forEach((el) => {
+          const k = el.dataset.t,
+            i = el.dataset.i;
+          if (k === "skills")
+            base[i].skills = el.value
+              .split(",")
+              .map((s) => s.trim())
+              .filter(Boolean);
+          else if (k === "commits" || k === "prs")
+            base[i][k] = Number(el.value) || 0;
+          else base[i][k] = el.value;
+        });
+        write(K.team, base);
+        toast("Team saved");
+      };
+      function buildSettings() {
+        const s = read(K.settings, DEF_SETTINGS);
+        document.getElementById("setWords").value = s.words.join(", ");
+        document.getElementById("setMarq").value = s.marquee.join(", ");
+        document.getElementById("setWa").value = s.whatsapp;
+        document.getElementById("setAvail").value = s.available ? "1" : "0";
+      }
+      document.getElementById("saveSettings").onclick = () => {
+        const list = (v) =>
+          v
+            .split(",")
+            .map((x) => x.trim())
+            .filter(Boolean);
+        write(K.settings, {
+          words: list(setWords.value),
+          marquee: list(setMarq.value),
+          whatsapp: setWa.value.trim(),
+          available: setAvail.value === "1",
+        });
+        toast("Settings saved");
+      };
+    </script>
+    <script src="untouch.js"></script>
+  </body>
+</html>

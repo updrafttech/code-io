@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta
+      name="description"
+      content="Meet the CODE.IO team."
+    />
+
+    <title>Team — CODE.IO</title>
+
+    <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="assets/CODE.IO.png" type="image/svg+xml" />
+  </head>
+
+  <body>
+    <div class="site-grid" aria-hidden="true"></div>
+    <div class="site-orb one" aria-hidden="true"></div>
+    <div class="site-orb two" aria-hidden="true"></div>
+    <div class="site-noise" aria-hidden="true"></div>
+
+    <header class="site-header" id="site-header">
+      <div class="nav-inner">
+        <a class="brand" href="index.html" aria-label="CODE.IO home">
+          <img
+            class="brand-mark"
+             src="assets/CODE.IO.png"
+            alt=""
+          />
+          <span>CODE<span class="brand-dot">.</span>IO</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary navigation">
+          <a href="work.html">Work</a>
+          <a href="index.html#approach">Approach</a>
+          <a class="active" href="team.html">Team</a>
+          <a href="index.html#contact">Contact</a>
+          <span data-auth-slot><a href="admin-login.html">Login</a></span>
+        </nav>
+
+        <a class="nav-cta" href="index.html#contact">
+          Start a project
+        </a>
+
+        <button
+          class="mobile-menu"
+          id="mobile-menu"
+          type="button"
+          aria-expanded="false"
+          aria-controls="mobile-navigation"
+        >
+          <span class="menu-icon" aria-hidden="true">☰</span>
+          <span id="mobile-menu-label">Menu</span>
+        </button>
+      </div>
+
+      <nav
+        class="mobile-navigation"
+        id="mobile-navigation"
+        aria-label="Mobile navigation"
+        hidden
+      >
+        <a href="work.html">Work</a>
+        <a href="index.html#approach">Approach</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#contact">Contact</a>
+        <span data-auth-slot><a href="admin-login.html">Login</a></span>
+      </nav>
+    </header>
+
+    <main>
+      <div class="wrap">
+        <section class="page-hero">
+          <div class="eyebrow">02 / The people</div>
+
+          <h1 class="page-title">
+            Three minds.<br />
+            <em>One room.</em>
+          </h1>
+
+          <p class="page-lede">
+            No account managers in between. Whoever builds your project is who
+            you talk to.
+          </p>
+        </section>
+      </div>
+
+      <section class="section wrap team-page-section">
+        <div class="team-list">
+          <article class="team-member">
+            <span class="team-number">01</span>
+
+            <div>
+              <h2>Pratyush</h2>
+
+              <p class="person-role">
+                Founder
+              </p>
+
+              <p>
+                Leads architecture and product thinking. Turns fuzzy ideas
+                into shippable systems with clean data models.
+              </p>
+
+              <div class="skill-list">
+                <span>TypeScript</span>
+                <span>Node.js</span>
+                <span>PostgreSQL</span>
+                <span>System design</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="team-member">
+            <span class="team-number">02</span>
+
+            <div>
+              <h2>Oggy</h2>
+
+              <p class="person-role">
+                Frontend engineer
+              </p>
+
+              <p>
+                Owns UI, motion, and frontend performance. Obsessed with
+                smooth interfaces and pixel-tight layouts.
+              </p>
+
+              <div class="skill-list">
+                <span>HTML</span>
+                <span>CSS</span>
+                <span>JavaScript</span>
+                <span>Motion</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="team-member">
+            <span class="team-number">03</span>
+
+            <div>
+              <h2>Shubham</h2>
+
+              <p class="person-role">
+                Backend engineer
+              </p>
+
+              <p>
+                Builds APIs, databases, and infrastructure. Keeps latency low,
+                queries fast, and deploys boring.
+              </p>
+
+              <div class="skill-list">
+                <span>Node.js</span>
+                <span>MongoDB</span>
+                <span>Docker</span>
+                <span>AWS</span>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="section-action">
+          <a class="button outline" href="index.html#contact">
+            Work with us
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap footer-inner">
+        <span>
+          © 2026 CODE.IO — Built by Pratyush, Oggy, Shubham
+        </span>
+
+        <div class="footer-links">
+          <a
+            href="https://wa.me/918737820680"
+            target="_blank"
+            rel="noreferrer"
+          >
+            WhatsApp
+          </a>
+
+          <a href="mailto:updrafttech.ai@gmail.com">Email</a>
+          <a href="index.html">Home</a>
+        </div>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="auth.js"></script><script>updateAuthUI()</script>
+    <script src="untouch.js"></script>
+  </body>
+</html>
