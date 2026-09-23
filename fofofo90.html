@@ -473,27 +473,7 @@
   <body>
     <div class="grid"></div>
     <div class="glow"></div>
-    <div id="login">
-      <form class="lock" id="loginForm">
-        <h1>
-          CODE<span>.</span>IO
-          <span style="font-size: 12px; color: var(--muted)">ADMIN</span>
-        </h1>
-        <p style="color: var(--muted); font-size: 13px; margin-top: 6px">
-          fofofo90.html — restricted
-        </p>
-        <label>Password</label
-        ><input id="pw" type="password" placeholder="••••••••" />
-        <div class="err" id="err"></div>
-        <button
-          class="btn p"
-          style="width: 100%; margin-top: 12px"
-          type="submit"
-        >
-          Unlock →
-        </button>
-      </form>
-    </div>
+    <div id="login"><div class="lock"><h1>CODE<span>.</span>IO <span style="font-size:12px;color:var(--muted)">ADMIN</span></h1><p style="color:var(--muted);font-size:13px;margin-top:6px">Sign in to your account to continue.</p><a class="btn p" style="display:block;text-align:center;width:100%;margin-top:12px" href="admin-login.html">Open secure sign in</a></div></div>
 
     <div id="app">
       <aside>
@@ -641,8 +621,8 @@
     </div>
     <div id="modal"><div class="sheet" id="sheet"></div></div>
     <div id="toast"></div>
+    <script src="auth-client.js"></script>
     <script>
-      const ADMIN_PASSWORD = "codeio@2026";
       const K = {
         leads: "codeio_db",
         projects: "codeio_projects",
@@ -740,38 +720,7 @@
       };
       let leads = [];
       let attempts = read(K.log, { fails: 0, lockedUntil: 0 });
-      document.getElementById("loginForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const now = Date.now();
-        const err = document.getElementById("err");
-        if (attempts.lockedUntil > now) {
-          err.textContent = `Locked ${Math.ceil((attempts.lockedUntil - now) / 1000)}s`;
-          return;
-        }
-        if (document.getElementById("pw").value === ADMIN_PASSWORD) {
-          attempts = { fails: 0, lockedUntil: 0 };
-          write(K.log, attempts);
-          sessionStorage.setItem("codeio_admin_session", "1");
-          boot();
-        } else {
-          attempts.fails++;
-          if (attempts.fails >= 3) {
-            attempts.lockedUntil = now + LOCK_MS;
-            attempts.fails = 0;
-            err.textContent = "Locked 30s";
-          } else err.textContent = `Wrong ${attempts.fails}/3`;
-          write(K.log, attempts);
-          document.querySelector(".lock").classList.add("shake");
-          setTimeout(
-            () => document.querySelector(".lock").classList.remove("shake"),
-            400,
-          );
-        }
-      });
-      document.getElementById("logout").onclick = () => {
-        sessionStorage.removeItem("codeio_admin_session");
-        location.reload();
-      };
+      document.getElementById('logout').onclick = async () => { await CodeIOAuth.logout(); location.href = 'index.html'; };
       function boot() {
         document.getElementById("login").style.display = "none";
         document.getElementById("app").style.display = "grid";
@@ -780,7 +729,7 @@
         buildTeam();
         buildSettings();
       }
-      if (sessionStorage.getItem("codeio_admin_session") === "1") boot();
+      CodeIOAuth.currentUser().then(user => { if (user?.role === "admin") boot(); else location.replace("admin-login.html"); });
       document.querySelectorAll(".nav button").forEach((b) =>
         b.addEventListener("click", () => {
           document

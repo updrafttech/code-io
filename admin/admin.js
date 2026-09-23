@@ -1,14 +1,51 @@
 (() => {
   const $ = (s, e=document) => e.querySelector(s), esc = s => String(s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   if (document.body.classList.contains('login-page')) {
-    if(Auth.isLoggedIn()){location.replace(Auth.isAdmin()?'admin.html':'index.html');return}
     $('#password-toggle').onclick=()=>{let i=$('#admin-password'); i.type=i.type==='password'?'text':'password'};
     $('#forgot-link').onclick=e=>{e.preventDefault();$('#forgot-modal').classList.add('show')}; document.querySelectorAll('[data-forgot-close]').forEach(b=>b.onclick=()=>$('#forgot-modal').classList.remove('show'));
-    $('#forgot-form').onsubmit=e=>{e.preventDefault();let email=new FormData(e.currentTarget).get('email'),btn=$('#forgot-submit');if(!/^\S+@\S+\.\S+$/.test(email)){ $('#forgot-status').textContent='Please enter a valid email address.';return }btn.disabled=true;btn.textContent='Sending…';setTimeout(()=>{$('#forgot-status').textContent='Password reset instructions would be sent to this email once backend authentication is connected.';btn.textContent='Sent';},500)};
-    $('#login-form').onsubmit=e=>{e.preventDefault();let email=$('#admin-email').value,pw=$('#admin-password').value,btn=$('.login-submit'),remember=$('.check input').checked,err=!email?'Enter your email.':!/^\S+@\S+\.\S+$/.test(email)?'Enter a valid email address.':!pw?'Enter your password.':'';if(err){$('#login-error').textContent=err;$('#login-error').classList.add('show');return}let user=Auth.login(email,pw,remember);if(!user){$('#login-error').textContent='Invalid email or password.';$('#login-error').classList.add('show');return}$('#login-error').classList.remove('show');btn.disabled=true;btn.textContent='Signing in...';setTimeout(()=>location.href=user.role==='admin'?'admin.html':'index.html',500)};document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#forgot-modal').classList.remove('show')});return;
+    $('#forgot-form').onsubmit = (event) => {
+      event.preventDefault();
+      $('#forgot-status').textContent = 'Password resets require the deployment setup secret. See the authentication setup steps in README.md.';
+    };
+    $('#login-form').onsubmit = async (event) => {
+      event.preventDefault();
+      const email = $('#admin-email').value.trim();
+      const password = $('#admin-password').value;
+      const remember = $('.check input').checked;
+      const button = $('.login-submit');
+      const error = $('#login-error');
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, remember }),
+        });
+        const authenticatedUser = response.ok ? await CodeIOAuth.currentUser() : null;
+        if (!response.ok) {
+          error.textContent = response.status === 400 || response.status === 401
+            ? 'Invalid email or password.'
+            : 'Sign in is temporarily unavailable.';
+          error.classList.add('show');
+          return;
+        }
+        error.classList.remove('show');
+        button.textContent = 'Signing in...';
+        location.href = authenticatedUser?.role === 'admin' ? 'admin.html' : 'index.html';
+      } catch {
+        error.textContent = 'Sign in is temporarily unavailable.';
+        error.classList.add('show');
+      } finally {
+        button.disabled = false;
+      }
+    };
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') $('#forgot-modal').classList.remove('show');
+    });
+    return;
   }
   if (!$('#app')) return;
-  if (!Auth.isAdmin()) { location.replace('admin-login.html'); return; } // UI-only placeholder: replace with server-side role validation.
   let page='dashboard', activeMessage=1, mobileMessageOpen=false, projectFilter='All', search=''; const D=window.AdminData;
   const icon={dashboard:'▦',projects:'◇',team:'♙',messages:'✉',media:'▧',settings:'⚙'};
   function toast(msg,type='success'){let t=document.createElement('div');t.className='toast '+(type==='error'?'error':'');t.textContent=msg;$('#toast-stack')?.append(t);setTimeout(()=>t.remove(),3500)}
@@ -28,6 +65,6 @@
   function submitModal(e){e.preventDefault();let f=e.currentTarget,type=f.dataset.type,s=D.get(),v=Object.fromEntries(new FormData(f));if(type==='project'){let x=s.projects.find(x=>x.id==f.dataset.id);if(x)Object.assign(x,{name:v.title,category:v.category,description:v.description});else s.projects.unshift({id:D.id(),name:v.title,category:v.category,status:'Published',updated:'Just now',image:'assets/hero.jpg',description:v.description});toast(x?'Project updated successfully.':'Project added successfully.')}if(type==='team'){let x=s.team.find(x=>x.id==f.dataset.id);if(x)Object.assign(x,v);else s.team.unshift({id:D.id(),...v,initials:v.name.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()});toast(x?'Team member updated.':'Team member added.')}if(type==='compose'){if(!v.to||!v.subject||!v.message)return toast('Please complete all required fields.','error');s.messages.unshift({id:D.id(),name:v.to,email:v.to,subject:v.subject,preview:v.message,time:'Now',date:'Today',status:'Replied',initials:'TO',thread:[{from:'CODE.IO',time:'Now',text:v.message}]});toast('Message sent successfully.')}if(type==='media'){s.media.unshift({id:D.id(),name:'new-upload.jpg',type:'Image',size:'1.2 MB',date:'Now',image:'assets/hero.jpg'});toast('Media uploaded successfully.')}D.save();$('.modal-layer').remove();render()}
   function confirmDelete(type,id){let names={project:'project',team:'team member',message:'message',media:'media item'},layer=document.createElement('div');layer.className='modal-layer show';layer.innerHTML=`<div class="modal" style="max-width:400px"><div class="modal-head"><div><h2>Delete this ${names[type]}?</h2><p class="muted">This action cannot be undone.</p></div></div><div class="modal-actions"><button class="ghost-btn" data-close>Cancel</button><button class="danger-btn" data-delete>Delete</button></div></div>`;document.body.append(layer);$('[data-close]',layer).onclick=()=>layer.remove();$('[data-delete]',layer).onclick=()=>{let s=D.get(), key=type==='team'?'team':type==='media'?'media':type==='message'?'messages':'projects';s[key]=s[key].filter(x=>x.id!=id);D.save();layer.remove();toast(`${names[type][0].toUpperCase()+names[type].slice(1)} deleted.`);render()}}
   function bind(){document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>{page=b.dataset.page;if(page==='messages')mobileMessageOpen=false;render()});document.querySelectorAll('[data-modal]').forEach(b=>b.onclick=()=>modal(b.dataset.modal,b.dataset.id));document.querySelectorAll('[data-confirm]').forEach(b=>b.onclick=()=>confirmDelete(b.dataset.confirm,b.dataset.id));document.querySelectorAll('[data-message]').forEach(b=>b.onclick=()=>{activeMessage=+b.dataset.message;mobileMessageOpen=true;page='messages';let m=D.get().messages.find(x=>x.id===activeMessage);if(m)m.status='Read';D.save();render()});document.querySelectorAll('[data-toast]').forEach(b=>b.onclick=()=>toast(b.dataset.toast));document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{projectFilter=b.dataset.filter;render()});$('[data-action="menu"]')?.addEventListener('click',()=>{$('.sidebar').classList.add('open');$('.sidebar-overlay').classList.add('show')});$('.sidebar-overlay')?.addEventListener('click',()=>{$('.sidebar').classList.remove('open');$('.sidebar-overlay').classList.remove('show')});document.querySelectorAll('[data-menu="profile"]').forEach(b=>b.onclick=()=>profileMenu());$('#global-search')?.addEventListener('input',e=>{let q=e.target.value.toLowerCase(),s=D.get(),r=$('.search-results');if(!q){r.classList.remove('show');return}let all=[...s.projects.map(x=>['PROJECTS',x.name,'projects']),...s.team.map(x=>['TEAM',x.name,'team']),...s.messages.map(x=>['MESSAGES',x.name+' — '+x.subject,'messages'])].filter(x=>x[1].toLowerCase().includes(q));r.innerHTML=all.map(x=>`<div class="result" data-go="${x[2]}"><small>${x[0]}</small>${x[1]}</div>`).join('')||'<div class="result muted">No results</div>';r.classList.add('show');r.querySelectorAll('[data-go]').forEach(x=>x.onclick=()=>{page=x.dataset.go;render()})});$('#reply-form')?.addEventListener('submit',e=>{e.preventDefault();let input=$('textarea',e.currentTarget),text=input.value.trim(),m=D.get().messages.find(x=>x.id===activeMessage);if(!text)return;if(!m.thread)m.thread=[];m.thread.push({from:'CODE.IO',time:'Just now',text});m.status='Replied';D.save();toast('Message sent successfully.');render()});$('[data-reply]')?.addEventListener('click',()=>$('.composer textarea').focus());$('[data-action="unread"]')?.addEventListener('click',()=>{let m=D.get().messages.find(x=>x.id===activeMessage);m.status='Unread';D.save();toast('Marked as unread.');render()});$('#project-search')?.addEventListener('input',e=>{document.querySelectorAll('.project-card-admin').forEach(x=>x.style.display=x.textContent.toLowerCase().includes(e.target.value.toLowerCase())?'':'none')})}
-  function profileMenu(){let l=document.createElement('div');l.className='modal-layer show';l.innerHTML='<div class="modal" style="max-width:300px"><div class="modal-head"><h2>Account</h2><button class="close" data-close>×</button></div><button class="quick" data-profile>Profile</button><button class="quick" data-settings>Settings</button><button class="danger-btn" style="width:100%;margin-top:10px" data-logout>Logout</button></div>';document.body.append(l);$('[data-close]',l).onclick=()=>l.remove();$('[data-profile]',l).onclick=()=>location.href='profile.html';$('[data-settings]',l).onclick=()=>{l.remove();page='settings';render()};$('[data-logout]',l).onclick=()=>{Auth.logout();location.href='index.html'}}
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-layer.show').forEach(x=>x.remove())}); render(); window.toast=toast;
+  function profileMenu(){let l=document.createElement('div');l.className='modal-layer show';l.innerHTML='<div class="modal" style="max-width:300px"><div class="modal-head"><h2>Account</h2><button class="close" data-close>×</button></div><button class="quick" data-profile>Profile</button><button class="quick" data-settings>Settings</button><button class="danger-btn" style="width:100%;margin-top:10px" data-logout>Logout</button></div>';document.body.append(l);$('[data-close]',l).onclick=()=>l.remove();$('[data-profile]',l).onclick=()=>location.href='profile.html';$('[data-settings]',l).onclick=()=>{l.remove();page='settings';render()};$('[data-logout]',l).onclick=async()=>{await CodeIOAuth.logout();location.href='index.html'}}
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-layer.show').forEach(x=>x.remove())}); CodeIOAuth.currentUser().then(user=>{if(!user)location.replace('admin-login.html');else if(user.role!=='admin')location.replace('index.html');else render()}); window.toast=toast;
 })();

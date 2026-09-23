@@ -75,7 +75,7 @@
     </footer>
  
     <div id="toast"></div>
-    <script src="app.js"></script>
+    <script src="auth-client.js"></script>
     <script src="untouch.js"></script>
     <script>
       // Front-end demo auth only — no server, no real account security.
@@ -114,20 +114,20 @@
       tabs.forEach((t) => t.addEventListener("click", () => setMode(t.dataset.tab)));
       document.getElementById("switchToSignup").addEventListener("click", (e) => { e.preventDefault(); setMode("signup"); });
  
-      document.getElementById("authForm").addEventListener("submit", (e) => {
+      document.getElementById("authForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const email = document.getElementById("femail").value.trim();
         const pass = document.getElementById("fpass").value;
-        const name = document.getElementById("fname").value.trim();
-        if (!email.includes("@") || pass.length < 6) {
+        if (mode === "signup") { err.textContent = "Account creation is not available here. Contact the administrator."; err.classList.add("show"); return; }
+        if (!email.includes("@") || pass.length < 1) {
           err.classList.add("show");
           return;
         }
         err.classList.remove("show");
-        const displayName = mode === "signup" && name ? name : email.split("@")[0];
-        setUser({ name: displayName, email });
-        toast(mode === "signup" ? "Account created" : "Signed in");
-        setTimeout(() => (location.href = "index.html"), 700);
+        try { const response = await fetch("/api/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password: pass }) }); if (!response.ok) throw new Error("Invalid email or password."); } catch { err.textContent = "Invalid email or password."; err.classList.add("show"); return; }
+        let user = null;
+        try { user = await CodeIOAuth.currentUser(); } catch { /* The server session is still authoritative. */ }
+        location.href = user?.role === "admin" ? "admin.html" : "index.html";
       });
     </script>
   </body>

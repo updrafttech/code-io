@@ -21,10 +21,11 @@ export async function onRequest(context) {
       message: "API and D1 connection working",
     });
   } catch (error) {
+    console.error("Health check D1 query failed", error);
     return Response.json(
       {
         ok: false,
-        error: error instanceof Error ? error.message : "Database query failed",
+        error: "Health check unavailable",
       },
       { status: 500 },
     );
