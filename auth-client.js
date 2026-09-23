@@ -24,11 +24,20 @@
     return { ...result, user: await currentUser() };
   };
 
+  const signup = async (name, email, password) => {
+    const result = await requestJson("/api/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    });
+    if (!result.response.ok) return { ...result, user: null };
+    return { ...result, user: await currentUser() };
+  };
+
   const logout = async () => {
     await requestJson("/api/auth/logout", { method: "POST", body: "{}" });
   };
 
-  window.CodeIOAuth = { currentUser, login, logout };
+  window.CodeIOAuth = { currentUser, login, signup, logout };
 
   window.updateAuthUI = async () => {
     let user = null;

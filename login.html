@@ -54,9 +54,9 @@
               </div>
               <div class="field">
                 <label for="fpass">Password</label>
-                <input id="fpass" type="password" placeholder="••••••••" autocomplete="current-password" required minlength="6" />
+                <input id="fpass" type="password" placeholder="••••••••" autocomplete="current-password" required minlength="12" />
               </div>
-              <p class="form-err" id="authErr">Enter a valid email and a password with at least 6 characters.</p>
+              <p class="form-err" id="authErr">Enter a valid email and a password with at least 12 characters.</p>
               <button class="btn primary block" type="submit" data-mag id="authSubmit">Sign in</button>
             </form>
  
@@ -78,8 +78,6 @@
     <script src="auth-client.js"></script>
     <script src="untouch.js"></script>
     <script>
-      // Front-end demo auth only — no server, no real account security.
-      // Swap the submit handler for a real API call when a backend exists.
       let mode = "signin";
       const tabs = document.querySelectorAll(".auth-tab");
       const nameField = document.getElementById("nameField");
@@ -116,18 +114,45 @@
  
       document.getElementById("authForm").addEventListener("submit", async (e) => {
         e.preventDefault();
+        submitBtn.disabled = true;
         const email = document.getElementById("femail").value.trim();
+        const name = document.getElementById("fname").value.trim();
         const pass = document.getElementById("fpass").value;
-        if (mode === "signup") { err.textContent = "Account creation is not available here. Contact the administrator."; err.classList.add("show"); return; }
-        if (!email.includes("@") || pass.length < 1) {
+        if (!email.includes("@") || pass.length < (mode === "signup" ? 12 : 1) || (mode === "signup" && (!name || name.length > 100))) {
+          err.textContent = mode === "signup"
+            ? "Enter your name, a valid email, and a password of at least 12 characters."
+            : "Enter a valid email and password.";
           err.classList.add("show");
+          submitBtn.disabled = false;
           return;
         }
         err.classList.remove("show");
-        try { const response = await fetch("/api/auth/login", { method: "POST", credentials: "same-origin", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, password: pass }) }); if (!response.ok) throw new Error("Invalid email or password."); } catch { err.textContent = "Invalid email or password."; err.classList.add("show"); return; }
-        let user = null;
-        try { user = await CodeIOAuth.currentUser(); } catch { /* The server session is still authoritative. */ }
-        location.href = user?.role === "admin" ? "admin.html" : "index.html";
+        try {
+          const result = mode === "signup"
+            ? await CodeIOAuth.signup(name, email, pass)
+            : await CodeIOAuth.login(email, pass);
+          if (!result.response.ok) {
+            err.textContent = result.data.error === "Unable to create account with these details"
+              ? "Unable to create an account with those details. Check the email or try signing in."
+              : result.data.error === "Enter a valid name, email, and password of at least 12 characters"
+                ? result.data.error
+                : mode === "signup"
+                  ? "Account creation is temporarily unavailable. Please try again."
+                  : result.response.status === 400 || result.response.status === 401
+                    ? "Invalid email or password."
+                    : "Sign in is temporarily unavailable. Please try again.";
+            err.classList.add("show");
+            return;
+          }
+          location.href = result.user?.role === "admin" ? "admin.html" : "index.html";
+        } catch {
+          err.textContent = mode === "signup"
+            ? "Account creation is temporarily unavailable. Please try again."
+            : "Sign in is temporarily unavailable. Please try again.";
+          err.classList.add("show");
+        } finally {
+          submitBtn.disabled = false;
+        }
       });
     </script>
   </body>
