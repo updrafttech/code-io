@@ -43,13 +43,18 @@ async function handlePost({ request, env }) {
     return json({ error: "Provide a valid email, password of at least 12 characters, and name for initial admin setup" }, 400);
   }
 
+  let stage = "start";
   try {
+    stage = "password hashing: before";
     const passwordHash = await hashPassword(password);
+    stage = "password hashing: after";
     let user;
     if (resetExisting) {
+      stage = "users SELECT: before";
       const existing = await env.DB.prepare(
         "SELECT id, name, email, role, avatar_url FROM users WHERE email = ? COLLATE NOCASE LIMIT 1",
       ).bind(email).first();
+      stage = "users SELECT: after";
       if (!existing) return json({ error: "Account not found" }, 404);
       await env.DB.prepare(
         "UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
@@ -57,30 +62,44 @@ async function handlePost({ request, env }) {
       await env.DB.prepare('DELETE FROM sessions WHERE user_id = ?').bind(existing.id).run();
       user = existing;
     } else {
+      stage = "users SELECT: before";
       const exists = await env.DB.prepare("SELECT id FROM users WHERE email = ? COLLATE NOCASE LIMIT 1").bind(email).first();
+      stage = "users SELECT: after";
       if (exists) return json({ error: "An account with this email already exists; use reset-existing" }, 409);
       const id = randomToken(16);
       const now = new Date().toISOString();
+      stage = "users INSERT: before";
       const insert = await env.DB.prepare(
         "INSERT INTO users (id, name, email, password_hash, role, avatar_url, created_at, updated_at) SELECT ?, ?, ?, ?, 'admin', NULL, ?, ? WHERE NOT EXISTS (SELECT 1 FROM users WHERE role = 'admin') AND NOT EXISTS (SELECT 1 FROM users WHERE email = ? COLLATE NOCASE)",
       ).bind(id, name, email, passwordHash, now, now, email).run();
+      stage = "users INSERT: after";
       if (insert.meta?.changes === 0) {
         return json({ error: "Initial admin setup is already complete or the email already exists" }, 409);
       }
       user = { id, name, email, role: "admin", avatar_url: null };
     }
 
+    stage = "session token generation: before";
     const token = randomToken();
     const tokenHash = await sha256Base64Url(token);
+    const sessionId = randomToken(16);
+    stage = "session token generation: after";
+    stage = "sessions INSERT: before";
     await env.DB.prepare(
       "INSERT INTO sessions (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, datetime('now', ?), CURRENT_TIMESTAMP)",
-    ).bind(randomToken(16), user.id, tokenHash, `+${SESSION_SECONDS} seconds`).run();
+    ).bind(sessionId, user.id, tokenHash, `+${SESSION_SECONDS} seconds`).run();
+    stage = "sessions INSERT: after";
 
     return json({ user: safeUser(user) }, 201, {
       "Set-Cookie": sessionCookie(token),
       "Cache-Control": "no-store",
     });
-  } catch {
+  } catch (error) {
+    console.error("setup-admin diagnostic", {
+      stage,
+      errorName: typeof error?.name === "string" ? error.name : "UnknownError",
+      errorMessage: typeof error?.message === "string" ? error.message : "Unknown error",
+    });
     return json({ error: "Setup unavailable" }, 500);
   }
 }
