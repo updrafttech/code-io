@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sign in — CODE.IO</title>
+    <title>Create account — CODE.IO</title>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link rel="shortcut icon" href="CODE.IO.png" type="image/x-icon" />
     <link rel="stylesheet" href="style.css" />
@@ -36,21 +36,25 @@
         <div class="auth-card rv in">
           <div class="auth-panel" data-tilt>
             <div class="auth-kicker"><span>CODE.IO / ACCOUNT</span><span class="auth-kicker-line" aria-hidden="true"></span></div>
-            <h1 class="auth-title">Welcome back</h1>
-            <p class="auth-sub">Sign in to your CODE.IO account.</p>
-            <form id="loginForm">
+            <h1 class="auth-title">Create your account</h1>
+            <p class="auth-sub">Set up access to your CODE.IO project dashboard.</p>
+            <form id="registerForm">
+              <div class="field">
+                <label for="fname">Name</label>
+                <input id="fname" type="text" placeholder="Your name" autocomplete="name" maxlength="100" required />
+              </div>
               <div class="field">
                 <label for="femail">Email</label>
                 <input id="femail" type="email" placeholder="you@company.com" autocomplete="email" required />
               </div>
               <div class="field">
                 <label for="fpass">Password</label>
-                <input id="fpass" type="password" placeholder="••••••••" autocomplete="current-password" required />
+                <input id="fpass" type="password" placeholder="••••••••" autocomplete="new-password" minlength="12" maxlength="1024" required />
               </div>
               <p class="form-err" id="authErr" role="alert" aria-live="polite"></p>
-              <button class="btn primary block auth-submit" type="submit" data-mag id="authSubmit">Sign in</button>
+              <button class="btn primary block auth-submit" type="submit" data-mag id="authSubmit">Create account</button>
             </form>
-            <p class="hint">Don't have an account? <a href="register.html">Register</a></p>
+            <p class="hint">Already have an account? <a href="login.html">Login</a></p>
           </div>
         </div>
       </div>
@@ -68,7 +72,7 @@
     <script src="auth-client.js"></script>
     <script src="untouch.js"></script>
     <script>
-      const form = document.getElementById("loginForm");
+      const form = document.getElementById("registerForm");
       const submitBtn = document.getElementById("authSubmit");
       const error = document.getElementById("authErr");
 
@@ -76,20 +80,29 @@
         event.preventDefault();
         submitBtn.disabled = true;
         error.classList.remove("show");
+        const name = document.getElementById("fname").value.trim();
         const email = document.getElementById("femail").value.trim();
         const password = document.getElementById("fpass").value;
+        if (!name || name.length > 100 || !email.includes("@") || password.length < 12 || password.length > 1024) {
+          error.textContent = "Enter your name, a valid email, and a password of at least 12 characters.";
+          error.classList.add("show");
+          submitBtn.disabled = false;
+          return;
+        }
         try {
-          const result = await CodeIOAuth.login(email, password);
+          const result = await CodeIOAuth.signup(name, email, password);
           if (!result.response.ok) {
-            error.textContent = result.response.status === 400 || result.response.status === 401
-              ? "Invalid credentials."
-              : "Sign in is temporarily unavailable. Please try again.";
+            error.textContent = result.data.error === "Unable to create account with these details"
+              ? "Unable to create an account with those details. Check the email or try signing in."
+              : result.data.error === "Enter a valid name, email, and password of at least 12 characters"
+                ? result.data.error
+                : "Account creation is temporarily unavailable. Please try again.";
             error.classList.add("show");
             return;
           }
           location.href = result.user?.role === "admin" ? "admin.html" : "index.html";
         } catch {
-          error.textContent = "Sign in is temporarily unavailable. Please try again.";
+          error.textContent = "Account creation is temporarily unavailable. Please try again.";
           error.classList.add("show");
         } finally {
           submitBtn.disabled = false;

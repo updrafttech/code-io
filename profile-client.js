@@ -9,7 +9,7 @@
       user = null;
     }
     if (!user) {
-      location.replace("admin-login.html");
+      location.replace("/login.html");
       return;
     }
 

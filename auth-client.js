@@ -47,7 +47,7 @@
       if (!user) {
         const link = document.createElement("a");
         link.className = "nav-login";
-        link.href = "admin-login.html";
+        link.href = "/login.html";
         link.textContent = "Login";
         slot.append(link);
         return;
