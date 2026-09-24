@@ -2141,6 +2141,23 @@ footer {
 
 .profile-section .pref input { accent-color: var(--acid); }
 
+/* The shared .button display rule overrides the browser's default [hidden] rule. */
+.profile-section #admin-profile[hidden] {
+  display: none;
+}
+
+/* Keep the profile save control legible against the dark profile card. */
+#save-profile:hover,
+#save-profile:focus-visible {
+  border-color: var(--acid);
+  background: var(--acid);
+  color: var(--ink);
+}
+
+#save-profile:hover {
+  box-shadow: 0 8px 24px rgba(200, 255, 67, 0.12);
+}
+
 @media (max-width: 520px) {
   .profile-page { padding: 100px 14px 48px; }
   .profile-card { padding: 24px 20px; }
