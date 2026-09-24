@@ -11,10 +11,23 @@ import {
   sha256Base64Url,
   verifyPassword,
 } from "../../../lib/auth.js";
+import { checkRateLimit } from "../../../lib/rate-limit.js";
 
 const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$100000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
 async function handlePost({ request, env }) {
+  let rateLimit;
+  try {
+    rateLimit = await checkRateLimit(request, env, { bucket: "login", limit: 10 });
+  } catch {
+    return json({ error: "Service unavailable" }, 503);
+  }
+  if (!rateLimit.allowed) {
+    return json({ error: "Too many requests" }, 429, {
+      "Retry-After": String(rateLimit.retryAfterSeconds),
+    });
+  }
+
   if (!env?.DB) return json({ error: "Authentication unavailable" }, 500);
 
   let body;

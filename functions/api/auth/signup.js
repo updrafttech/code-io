@@ -11,6 +11,7 @@ import {
   sessionCookie,
   sha256Base64Url,
 } from "../../../lib/auth.js";
+import { checkRateLimit } from "../../../lib/rate-limit.js";
 
 function logSignupFailure(stage, error) {
   console.error("signup diagnostic", {
@@ -21,6 +22,18 @@ function logSignupFailure(stage, error) {
 }
 
 async function handlePost({ request, env }) {
+  let rateLimit;
+  try {
+    rateLimit = await checkRateLimit(request, env, { bucket: "signup", limit: 5 });
+  } catch {
+    return json({ error: "Service unavailable" }, 503);
+  }
+  if (!rateLimit.allowed) {
+    return json({ error: "Too many requests" }, 429, {
+      "Retry-After": String(rateLimit.retryAfterSeconds),
+    });
+  }
+
   if (!env?.DB) {
     logSignupFailure("database binding", { name: "MissingBinding", message: "DB binding unavailable" });
     return json({ error: "Signup unavailable" }, 500);
