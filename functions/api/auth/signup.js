@@ -47,22 +47,22 @@ async function handlePost({ request, env }) {
     stage = "account record preparation";
     const id = randomToken(16);
     const now = new Date().toISOString();
-    stage = "users INSERT";
-    const insert = await env.DB.prepare(
-      "INSERT INTO users (id, name, email, password_hash, role, avatar_url, created_at, updated_at) VALUES (?, ?, ?, ?, 'user', NULL, ?, ?) ON CONFLICT(email) DO NOTHING",
-    ).bind(id, name, email, passwordHash, now, now).run();
-    if (insert.meta?.changes === 0) {
-      return json({ error: "Unable to create account with these details" }, 409);
-    }
-
     stage = "session token generation";
     const token = randomToken();
     const tokenHash = await sha256Base64Url(token);
     const sessionId = randomToken(16);
-    stage = "sessions INSERT";
-    await env.DB.prepare(
-      "INSERT INTO sessions (id, user_id, token_hash, expires_at, created_at) VALUES (?, ?, ?, datetime('now', ?), CURRENT_TIMESTAMP)",
-    ).bind(sessionId, id, tokenHash, `+${SESSION_DEFAULT_SECONDS} seconds`).run();
+    stage = "atomic user and session inserts";
+    const results = await env.DB.batch([
+      env.DB.prepare(
+        "INSERT INTO users (id, name, email, password_hash, role, avatar_url, created_at, updated_at) VALUES (?, ?, ?, ?, 'user', NULL, ?, ?) ON CONFLICT(email) DO NOTHING",
+      ).bind(id, name, email, passwordHash, now, now),
+      env.DB.prepare(
+        "INSERT INTO sessions (id, user_id, token_hash, expires_at, created_at) SELECT ?, id, ?, datetime('now', ?), CURRENT_TIMESTAMP FROM users WHERE id = ?",
+      ).bind(sessionId, tokenHash, `+${SESSION_DEFAULT_SECONDS} seconds`, id),
+    ]);
+    if (results[0]?.meta?.changes === 0) {
+      return json({ error: "Unable to create account with these details" }, 409);
+    }
 
     stage = "success response and cookie construction";
     const user = { id, name, email, role: "user", avatar_url: null };

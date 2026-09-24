@@ -12,7 +12,7 @@ import {
   verifyPassword,
 } from "../../../lib/auth.js";
 
-const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$600000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
+const DUMMY_PASSWORD_HASH = "pbkdf2-sha256$100000$AAAAAAAAAAAAAAAAAAAAAA$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
 async function handlePost({ request, env }) {
   if (!env?.DB) return json({ error: "Authentication unavailable" }, 500);
