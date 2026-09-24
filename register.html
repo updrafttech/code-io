@@ -92,17 +92,17 @@
         try {
           const result = await CodeIOAuth.signup(name, email, password);
           if (!result.response.ok) {
-            error.textContent = result.data.error === "Unable to create account with these details"
-              ? "Unable to create an account with those details. Check the email or try signing in."
-              : result.data.error === "Enter a valid name, email, and password of at least 12 characters"
-                ? result.data.error
-                : "Account creation is temporarily unavailable. Please try again.";
+            error.textContent = result.response.status === 409
+              ? "An account with this email may already exist. Try logging in or use another email."
+              : result.response.status === 400
+                ? "Check your name, email, and password. Use a valid email and a password of at least 12 characters."
+                : "We couldn't create your account right now. Please try again.";
             error.classList.add("show");
             return;
           }
           location.href = result.user?.role === "admin" ? "admin.html" : "index.html";
         } catch {
-          error.textContent = "Account creation is temporarily unavailable. Please try again.";
+          error.textContent = "We couldn't create your account right now. Please try again.";
           error.classList.add("show");
         } finally {
           submitBtn.disabled = false;
