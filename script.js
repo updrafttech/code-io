@@ -145,6 +145,10 @@
     });
   });
 
+  window.addEventListener("DOMContentLoaded", () => {
+    window.updateAuthUI?.();
+  }, { once: true });
+
   function formValues() {
     return {
       name: document.getElementById("contact-name")?.value.trim() || "",

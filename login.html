@@ -67,34 +67,5 @@
     <div id="toast"></div>
     <script src="auth-client.js"></script>
     <script src="untouch.js"></script>
-    <script>
-      const form = document.getElementById("loginForm");
-      const submitBtn = document.getElementById("authSubmit");
-      const error = document.getElementById("authErr");
-
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        submitBtn.disabled = true;
-        error.classList.remove("show");
-        const email = document.getElementById("femail").value.trim();
-        const password = document.getElementById("fpass").value;
-        try {
-          const result = await CodeIOAuth.login(email, password);
-          if (!result.response.ok) {
-            error.textContent = result.response.status === 400 || result.response.status === 401
-              ? "Invalid credentials."
-              : "Sign in is temporarily unavailable. Please try again.";
-            error.classList.add("show");
-            return;
-          }
-          location.href = result.user?.role === "admin" ? "admin.html" : "index.html";
-        } catch {
-          error.textContent = "Sign in is temporarily unavailable. Please try again.";
-          error.classList.add("show");
-        } finally {
-          submitBtn.disabled = false;
-        }
-      });
-    </script>
   </body>
 </html>

@@ -91,6 +91,73 @@
     });
   };
 
+  const loginForm = document.getElementById("loginForm");
+  if (loginForm) {
+    const submitBtn = document.getElementById("authSubmit");
+    const error = document.getElementById("authErr");
+    loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submitBtn.disabled = true;
+      error.classList.remove("show");
+      const email = document.getElementById("femail").value.trim();
+      const password = document.getElementById("fpass").value;
+      try {
+        const result = await CodeIOAuth.login(email, password);
+        if (!result.response.ok) {
+          error.textContent = result.response.status === 400 || result.response.status === 401
+            ? "Invalid credentials."
+            : "Sign in is temporarily unavailable. Please try again.";
+          error.classList.add("show");
+          return;
+        }
+        location.href = result.user?.role === "admin" ? "admin.html" : "index.html";
+      } catch {
+        error.textContent = "Sign in is temporarily unavailable. Please try again.";
+        error.classList.add("show");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  const registerForm = document.getElementById("registerForm");
+  if (registerForm) {
+    const submitBtn = document.getElementById("authSubmit");
+    const error = document.getElementById("authErr");
+    registerForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submitBtn.disabled = true;
+      error.classList.remove("show");
+      const name = document.getElementById("fname").value.trim();
+      const email = document.getElementById("femail").value.trim();
+      const password = document.getElementById("fpass").value;
+      if (!name || name.length > 100 || !email.includes("@") || password.length < 12 || password.length > 1024) {
+        error.textContent = "Enter your name, a valid email, and a password of at least 12 characters.";
+        error.classList.add("show");
+        submitBtn.disabled = false;
+        return;
+      }
+      try {
+        const result = await CodeIOAuth.signup(name, email, password);
+        if (!result.response.ok) {
+          error.textContent = result.response.status === 409
+            ? "An account with this email may already exist. Try logging in or use another email."
+            : result.response.status === 400
+              ? "Check your name, email, and password. Use a valid email and a password of at least 12 characters."
+              : "We couldn't create your account right now. Please try again.";
+          error.classList.add("show");
+          return;
+        }
+        location.href = result.user?.role === "admin" ? "admin.html" : "index.html";
+      } catch {
+        error.textContent = "We couldn't create your account right now. Please try again.";
+        error.classList.add("show");
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
   document.addEventListener("click", (event) => {
     if (!event.target.closest("[data-auth-slot]")) {
       document.querySelectorAll(".public-account-menu").forEach((menu) => { menu.hidden = true; });
