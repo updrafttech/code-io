@@ -631,16 +631,8 @@
         settings: "codeio_settings",
         log: "codeio_admin_log",
       };
-      const LOCK_MS = 30000;
-      const read = (k, f) => {
-        try {
-          const r = localStorage.getItem(k);
-          return r ? JSON.parse(r) : f;
-        } catch {
-          return f;
-        }
-      };
-      const write = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+      const read = (k, fallback) => fallback;
+      const write = () => {};
       const esc = (s) =>
         String(s).replace(
           /[&<>"]/g,
@@ -720,8 +712,7 @@
         whatsapp: "918737820680",
       };
       let leads = [];
-      let attempts = read(K.log, { fails: 0, lockedUntil: 0 });
-      document.getElementById('logout').onclick = async () => { await CodeIOAuth.logout(); location.href = 'index.html'; };
+      document.getElementById('logout').onclick = () => { location.href = 'index.html'; };
       function boot() {
         document.getElementById("login").style.display = "none";
         document.getElementById("app").style.display = "grid";
@@ -730,7 +721,7 @@
         buildTeam();
         buildSettings();
       }
-      CodeIOAuth.currentUser().then(user => { if (user?.role === "admin") boot(); else location.replace("admin-login.html"); });
+      boot();
       document.querySelectorAll(".nav button").forEach((b) =>
         b.addEventListener("click", () => {
           document

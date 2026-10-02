@@ -19,8 +19,7 @@ window.AdminData = (() => {
     ],
     media: [{ id: 1, name:'musicz-cover.png', type:'Image', size:'1.8 MB', date:'Sep 20', image:'assets/musicz-cover.png' }, { id: 2, name:'hero.jpg', type:'Image', size:'2.4 MB', date:'Sep 18', image:'assets/hero.jpg' }, { id: 3, name:'project-brief.pdf', type:'Document', size:'840 KB', date:'Sep 12' }]
   };
-  const key = 'codeio-admin-demo'; let state;
-  try { state = JSON.parse(localStorage.getItem(key)) || seed; } catch { state = seed; }
-  const save = () => localStorage.setItem(key, JSON.stringify(state));
+  let state = structuredClone(seed);
+  const save = () => {};
   return { get: () => state, save, reset: () => { state = structuredClone(seed); save(); }, id: () => Date.now() };
 })();
